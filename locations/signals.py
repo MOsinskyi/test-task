@@ -10,9 +10,9 @@ def handle_new_review(sender, instance, created, **kwargs):
     if created:
         instance.location.update_popularity()
 
-        subscribers = instance.location.subscribers.select_related('user')
+        subscribers = instance.location.subscribers.select_related("user")
         recipient_list = [sub.user.email for sub in subscribers if sub.user.email]
-        
+
         if recipient_list:
             send_mail(
                 subject=f"New review for {instance.location.name}",

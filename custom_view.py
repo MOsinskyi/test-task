@@ -20,9 +20,9 @@ class CustomModelViewSet(viewsets.ModelViewSet):
 
     def retrieve(self, request, *args, **kwargs):
         if self.retrieve_cache_key:
-            return cache_page(self.retrieve_cache_timeout, key_prefix=self.retrieve_cache_key)(
-                super().retrieve
-            )(request, *args, **kwargs)
+            return cache_page(
+                self.retrieve_cache_timeout, key_prefix=self.retrieve_cache_key
+            )(super().retrieve)(request, *args, **kwargs)
         return super().retrieve(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):

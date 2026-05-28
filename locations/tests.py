@@ -12,33 +12,23 @@ def test_popularity_calculation():
         description="A test location",
         category=category,
         latitude=10.0,
-        longitude=10.0
+        longitude=10.0,
     )
 
     user = User.objects.create_user(
         username=getattr(settings, "TEST_USER1_USERNAME"),
-        password=getattr(settings, "TEST_USER1_PASSWORD")
+        password=getattr(settings, "TEST_USER1_PASSWORD"),
     )
 
     assert location.popularity_score == 0.0
 
-    Review.objects.create(
-        location=location,
-        user=user,
-        text="Great place!",
-        rating=5
-    )
+    Review.objects.create(location=location, user=user, text="Great place!", rating=5)
 
     location.refresh_from_db()
 
     assert location.popularity_score == 10.0
 
-    Review.objects.create(
-        location=location,
-        user=user,
-        text="Not bad",
-        rating=3
-    )
+    Review.objects.create(location=location, user=user, text="Not bad", rating=3)
 
     location.refresh_from_db()
     # Avg rating: (5 + 3) / 2 = 4.0
@@ -55,7 +45,7 @@ def test_subscription_signal(mailoutbox):
         description="A test location",
         category=category,
         latitude=10.0,
-        longitude=10.0
+        longitude=10.0,
     )
 
     user1 = User.objects.create_user(
@@ -72,10 +62,7 @@ def test_subscription_signal(mailoutbox):
     Subscription.objects.create(user=user1, location=location)
 
     Review.objects.create(
-        location=location,
-        user=user2,
-        text="Check this out!",
-        rating=4
+        location=location, user=user2, text="Check this out!", rating=4
     )
 
     assert len(mailoutbox) == 1

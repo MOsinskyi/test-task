@@ -8,13 +8,13 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'password')
+        fields = ("id", "username", "email", "password")
 
     def create(self, validated_data):
         user = User.objects.create_user(
-            username=validated_data['username'],
-            email=validated_data.get('email', ''),
-            password=validated_data['password']
+            username=validated_data["username"],
+            email=validated_data.get("email", ""),
+            password=validated_data["password"],
         )
         return user
 
@@ -25,11 +25,11 @@ class ResetPasswordRequestSerializer(serializers.Serializer):
 
 class ResetPasswordSerializer(serializers.Serializer):
     new_password = serializers.RegexField(
-        regex=r'^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$',
+        regex=r"^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$",
         write_only=True,
         error_messages={
-            'invalid': 'Password must be at least 8 characters long with at least one capital letter and symbol'
-        }
+            "invalid": "Password must be at least 8 characters long with at least one capital letter and symbol"
+        },
     )
     confirm_password = serializers.CharField(write_only=True, required=True)
 
@@ -37,33 +37,48 @@ class ResetPasswordSerializer(serializers.Serializer):
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = '__all__'
+        fields = "__all__"
 
 
 class LocationSerializer(serializers.ModelSerializer):
-    category_name = serializers.ReadOnlyField(source='category.name')
+    category_name = serializers.ReadOnlyField(source="category.name")
 
     class Meta:
         model = Location
         fields = (
-            'id', 'name', 'description', 'category', 'category_name',
-            'latitude', 'longitude', 'popularity_score', 'created_at', 'updated_at'
+            "id",
+            "name",
+            "description",
+            "category",
+            "category_name",
+            "latitude",
+            "longitude",
+            "popularity_score",
+            "created_at",
+            "updated_at",
         )
-        read_only_fields = ('popularity_score',)
+        read_only_fields = ("popularity_score",)
 
 
 class ReviewSerializer(serializers.ModelSerializer):
-    user_username = serializers.ReadOnlyField(source='user.username')
+    user_username = serializers.ReadOnlyField(source="user.username")
     likes_count = serializers.SerializerMethodField()
     dislikes_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Review
         fields = (
-            'id', 'location', 'user', 'user_username', 'text',
-            'rating', 'likes_count', 'dislikes_count', 'created_at'
+            "id",
+            "location",
+            "user",
+            "user_username",
+            "text",
+            "rating",
+            "likes_count",
+            "dislikes_count",
+            "created_at",
         )
-        read_only_fields = ('user',)
+        read_only_fields = ("user",)
 
     def get_likes_count(self, obj):
         return obj.votes.filter(vote=1).count()
@@ -75,14 +90,14 @@ class ReviewSerializer(serializers.ModelSerializer):
 class ReviewVoteSerializer(serializers.ModelSerializer):
     class Meta:
         model = ReviewVote
-        fields = ('id', 'review', 'user', 'vote')
-        read_only_fields = ('user',)
+        fields = ("id", "review", "user", "vote")
+        read_only_fields = ("user",)
 
 
 class SubscriptionSerializer(serializers.ModelSerializer):
-    location_name = serializers.ReadOnlyField(source='location.name')
+    location_name = serializers.ReadOnlyField(source="location.name")
 
     class Meta:
         model = Subscription
-        fields = ('id', 'location_name', 'created_at')
-        read_only_fields = ('user',)
+        fields = ("id", "location_name", "created_at")
+        read_only_fields = ("user",)

@@ -1,7 +1,8 @@
 from django.apps import AppConfig
 
+
 class LocationsConfig(AppConfig):
-    name = 'locations'
+    name = "locations"
 
     def ready(self):
-        import locations.signals # noqa
+        import locations.signals  # noqa

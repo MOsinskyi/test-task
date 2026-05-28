@@ -5,52 +5,64 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('locations', '0001_initial'),
+        ("locations", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AlterUniqueTogether(
-            name='reviewvote',
+            name="reviewvote",
             unique_together=set(),
         ),
         migrations.AlterUniqueTogether(
-            name='subscription',
+            name="subscription",
             unique_together=set(),
         ),
         migrations.AlterField(
-            model_name='category',
-            name='slug',
+            model_name="category",
+            name="slug",
             field=models.SlugField(blank=True, unique=True),
         ),
         migrations.AlterField(
-            model_name='location',
-            name='description',
+            model_name="location",
+            name="description",
             field=models.TextField(blank=True, null=True),
         ),
         migrations.AlterField(
-            model_name='location',
-            name='latitude',
+            model_name="location",
+            name="latitude",
             field=models.DecimalField(decimal_places=14, max_digits=16),
         ),
         migrations.AlterField(
-            model_name='location',
-            name='longitude',
+            model_name="location",
+            name="longitude",
             field=models.DecimalField(decimal_places=14, max_digits=16),
         ),
         migrations.AlterField(
-            model_name='review',
-            name='rating',
-            field=models.PositiveSmallIntegerField(choices=[(1, 'Poor'), (2, 'Fair'), (3, 'Good'), (4, 'Very Good'), (5, 'Excellent')]),
+            model_name="review",
+            name="rating",
+            field=models.PositiveSmallIntegerField(
+                choices=[
+                    (1, "Poor"),
+                    (2, "Fair"),
+                    (3, "Good"),
+                    (4, "Very Good"),
+                    (5, "Excellent"),
+                ]
+            ),
         ),
         migrations.AddConstraint(
-            model_name='reviewvote',
-            constraint=models.UniqueConstraint(fields=('review', 'user'), name='unique_vote_per_user_per_review'),
+            model_name="reviewvote",
+            constraint=models.UniqueConstraint(
+                fields=("review", "user"), name="unique_vote_per_user_per_review"
+            ),
         ),
         migrations.AddConstraint(
-            model_name='subscription',
-            constraint=models.UniqueConstraint(fields=('user', 'location'), name='unique_subscription_per_user_per_location'),
+            model_name="subscription",
+            constraint=models.UniqueConstraint(
+                fields=("user", "location"),
+                name="unique_subscription_per_user_per_location",
+            ),
         ),
     ]
