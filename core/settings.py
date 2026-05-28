@@ -78,7 +78,7 @@ DATABASES = {
 }
 
 CACHES = {
-    'default': env.cache('REDIS_URL', default='locmemcache://')
+    'default': env.cache('REDIS_URL', default='locmem://')
 }
 
 AUTH_PASSWORD_VALIDATORS = [
