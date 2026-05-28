@@ -26,7 +26,7 @@ cd test-task
 ### 2. Environment Setup
 Create a `.env` file in the root directory (refer to the project documentation for required variables):
 ```bash
-cp .env.example .env  # If an example exists, otherwise create one manually
+cp .env.example .env
 ```
 
 ### 3. Install Dependencies
