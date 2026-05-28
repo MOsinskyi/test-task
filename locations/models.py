@@ -8,7 +8,7 @@ from .choices import RATING_CHOICES, VOTE_CHOICES
 
 class Category(models.Model):
     name = models.CharField(max_length=100)
-    slug = models.SlugField(unique=True, blank=True)
+    slug = models.SlugField(unique=True, blank=True, db_index=True)
 
     class Meta:
         verbose_name_plural = "Categories"
@@ -64,7 +64,12 @@ class ReviewVote(models.Model):
     vote = models.SmallIntegerField(choices=VOTE_CHOICES)
 
     class Meta:
-        unique_together = ('review', 'user')
+        constraints = [
+            models.UniqueConstraint(
+                fields=['review', 'user'],
+                name='unique_vote_per_user_per_review'
+            )
+        ]
 
 class Subscription(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='subscriptions')
@@ -72,4 +77,9 @@ class Subscription(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('user', 'location')
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'location'],
+                name='unique_subscription_per_user_per_location'
+            )
+        ]
