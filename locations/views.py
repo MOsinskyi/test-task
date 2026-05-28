@@ -1,25 +1,114 @@
 from http import HTTPMethod
 
 import pandas as pd
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
 from django.http import HttpResponse
 from rest_framework import viewsets, permissions, status, generics
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from django.contrib.auth.models import User
+from django.urls import reverse
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
 
 from custom_view import CustomModelViewSet
-from .models import Category, Location, Review, ReviewVote, Subscription
+from .models import Category, Location, Review, ReviewVote, Subscription, PasswordReset
 from .serializers import (
     UserSerializer, CategorySerializer, LocationSerializer,
-    ReviewSerializer, SubscriptionSerializer
+    ReviewSerializer, SubscriptionSerializer, ResetPasswordRequestSerializer, ResetPasswordSerializer
 )
 
 class UserRegistrationView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [permissions.AllowAny]
+
+
+class RequestPasswordResetView(generics.GenericAPIView):
+    permission_classes = [permissions.AllowAny]
+    serializer_class = ResetPasswordRequestSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+
+        try:
+            serializer.is_valid(raise_exception=True)
+        except ValidationError:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        email = serializer.validated_data['email']
+
+        user = User.objects.filter(email=email).first()
+
+        if user:
+            token_generator = PasswordResetTokenGenerator()
+            token = token_generator.make_token(user)
+            reset = PasswordReset(email=email, token=token)
+            reset.save()
+
+            reset_url = request.build_absolute_uri(
+                reverse('reset_password_confirm', kwargs={'token': token})
+            )
+
+            print(reset_url)
+
+            if user.email:
+                html_message = render_to_string(
+                    'locations/emails/password_reset.html',
+                    {'reset_url': reset_url}
+                )
+                send_mail(
+                    subject="Password reset",
+                    message=f"Відновлення паролю: {reset_url}",
+                    from_email=None,
+                    recipient_list=[user.email],
+                    fail_silently=True,
+                    html_message=html_message
+                )
+            else:
+                return Response({'message': 'User does not have an email address.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            return Response({'message': 'Password reset email sent.'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'message': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class ResetPasswordView(generics.GenericAPIView):
+    serializer_class = ResetPasswordSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request, token):
+        serializer = self.get_serializer(data=request.data)
+        try:
+            serializer.is_valid(raise_exception=True)
+        except ValidationError:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        data = serializer.validated_data
+
+        new_password = data['new_password']
+        confirm_password = data['confirm_password']
+
+        if new_password != confirm_password:
+            return Response({'message': 'Passwords do not match.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        reset_obj = PasswordReset.objects.filter(token=token).first()
+
+        if not reset_obj:
+            return Response({'message': 'Invalid or expired token.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = User.objects.filter(email=reset_obj.email).first()
+
+        if user:
+            user.set_password(new_password)
+            user.save()
+            reset_obj.delete()
+            return Response({'message': 'Password reset successfully.'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'message': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
 
 
 class CategoryViewSet(CustomModelViewSet):

@@ -6,6 +6,12 @@ from django.utils.text import slugify
 from .choices import RATING_CHOICES, VOTE_CHOICES
 
 
+class PasswordReset(models.Model):
+    email = models.EmailField()
+    token = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
 class Category(models.Model):
     name = models.CharField(max_length=100)
     slug = models.SlugField(unique=True, blank=True, db_index=True)

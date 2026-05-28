@@ -2,6 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth.models import User
 from .models import Category, Location, Review, ReviewVote, Subscription
 
+
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
 
@@ -17,10 +18,27 @@ class UserSerializer(serializers.ModelSerializer):
         )
         return user
 
+
+class ResetPasswordRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+
+
+class ResetPasswordSerializer(serializers.Serializer):
+    new_password = serializers.RegexField(
+        regex=r'^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$',
+        write_only=True,
+        error_messages={
+            'invalid': 'Password must be at least 8 characters long with at least one capital letter and symbol'
+        }
+    )
+    confirm_password = serializers.CharField(write_only=True, required=True)
+
+
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = '__all__'
+
 
 class LocationSerializer(serializers.ModelSerializer):
     category_name = serializers.ReadOnlyField(source='category.name')
@@ -33,6 +51,7 @@ class LocationSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ('popularity_score',)
 
+
 class ReviewSerializer(serializers.ModelSerializer):
     user_username = serializers.ReadOnlyField(source='user.username')
     likes_count = serializers.SerializerMethodField()
@@ -41,7 +60,7 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = (
-            'id', 'location', 'user', 'user_username', 'text', 
+            'id', 'location', 'user', 'user_username', 'text',
             'rating', 'likes_count', 'dislikes_count', 'created_at'
         )
         read_only_fields = ('user',)
@@ -52,11 +71,13 @@ class ReviewSerializer(serializers.ModelSerializer):
     def get_dislikes_count(self, obj):
         return obj.votes.filter(vote=-1).count()
 
+
 class ReviewVoteSerializer(serializers.ModelSerializer):
     class Meta:
         model = ReviewVote
         fields = ('id', 'review', 'user', 'vote')
         read_only_fields = ('user',)
+
 
 class SubscriptionSerializer(serializers.ModelSerializer):
     location_name = serializers.ReadOnlyField(source='location.name')
