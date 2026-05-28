@@ -14,7 +14,7 @@ def handle_new_review(sender, instance, created, **kwargs):
         if recipient_list:
             send_mail(
                 subject=f"New review for {instance.location.name}",
-                message=f"A new review was posted by {instance.user.username}:\n\n{instance.text}",
+                message=f"Новий відгук, надісланий користувачем {instance.user.username}:\n\n{instance.text}",
                 from_email=None,
                 recipient_list=recipient_list,
                 fail_silently=True,
