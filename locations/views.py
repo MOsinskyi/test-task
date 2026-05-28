@@ -9,10 +9,11 @@ from django.contrib.auth.models import User
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
 
+from custom_view import CustomModelViewSet
 from .models import Category, Location, Review, ReviewVote, Subscription
 from .serializers import (
     UserSerializer, CategorySerializer, LocationSerializer,
-    ReviewSerializer, ReviewVoteSerializer, SubscriptionSerializer
+    ReviewSerializer, SubscriptionSerializer
 )
 
 class UserRegistrationView(generics.CreateAPIView):
@@ -20,18 +21,24 @@ class UserRegistrationView(generics.CreateAPIView):
     serializer_class = UserSerializer
     permission_classes = [permissions.AllowAny]
 
-class CategoryViewSet(viewsets.ModelViewSet):
+
+class CategoryViewSet(CustomModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    list_cache_key = 'category_list'
+    retrieve_cache_key = 'category_detail'
 
-class LocationViewSet(viewsets.ModelViewSet):
+
+class LocationViewSet(CustomModelViewSet):
     queryset = Location.objects.all()
     serializer_class = LocationSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['category', 'popularity_score']
     search_fields = ['name', 'description']
     ordering_fields = ['popularity_score', 'created_at']
+    list_cache_key = 'location_list'
+    retrieve_cache_key = 'location_detail'
 
     @action(detail=False, methods=[HTTPMethod.GET])
     def export(self, request):
@@ -70,10 +77,12 @@ class LocationViewSet(viewsets.ModelViewSet):
         Subscription.objects.filter(user=request.user, location=location).delete()
         return Response({'status': 'unsubscribed'}, status=status.HTTP_204_NO_CONTENT)
 
-class ReviewViewSet(viewsets.ModelViewSet):
+class ReviewViewSet(CustomModelViewSet):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    list_cache_key = 'review_list'
+    retrieve_cache_key = 'review_detail'
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
